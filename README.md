@@ -87,3 +87,140 @@ Security Group은 EC2 인스턴스로 들어오는 네트워크 트래픽을 제
 - VPC 및 관련 리소스 삭제 성공: `screenshots/13-vpc-mission6-delete-success.png`
 - 삭제 후 VPC 목록 비어 있음: `screenshots/15-vpc-list-empty-after-delete.png`
 - 키페어 삭제 성공: `screenshots/17-keypair-delete-success.png`
+
+## 리소스 추적 기준
+
+이번 실습에서는 AWS 리소스를 정리할 때 **이름 규칙(Name tag)** 을 기준으로 추적했다.
+
+공통적으로 `mission6-` 접두어를 사용하여 실습 리소스를 구분했다.
+
+| 리소스              | 이름                       |
+| ---------------- | ------------------------ |
+| VPC              | `mission6-vpc`           |
+| Public Subnet    | `mission6-public-subnet` |
+| Internet Gateway | `mission6-igw`           |
+| Route Table      | `mission6-public-rt`     |
+| Security Group   | `mission6-web-sg`        |
+| EC2 Instance     | `mission6-web-ec2`       |
+| Key Pair         | `mission6-key`           |
+| Docker Container | `mission6-nginx`         |
+
+별도의 공통 태그를 일괄 부여하지는 않았지만, 모든 주요 리소스 이름에 `mission6-` 접두어를 붙여 실습 리소스와 기본 리소스를 구분했다. 정리 단계에서는 EC2, EBS Volume, Elastic IP, Internet Gateway, Subnet, Route Table, Security Group, VPC 순서로 `mission6-` 관련 리소스가 남아 있는지 확인했다.
+
+---
+
+## Public Subnet Route Table
+
+Public Subnet에 배치된 EC2가 외부 인터넷과 통신하려면 Route Table에 기본 인터넷 경로가 필요하다.
+
+이번 구성에서는 Route Table `mission6-public-rt`에 다음 경로를 설정했다.
+
+| Destination   | Target         | 의미        |
+| ------------- | -------------- | --------- |
+| `10.0.0.0/16` | `local`        | VPC 내부 통신 |
+| `0.0.0.0/0`   | `mission6-igw` | 외부 인터넷 통신 |
+
+`10.0.0.0/16 → local`은 VPC 내부 주소 간 통신을 위한 기본 경로이다. 반면 `0.0.0.0/0 → mission6-igw`는 VPC 내부 범위가 아닌 모든 외부 목적지로 나가는 트래픽을 Internet Gateway로 보내기 위한 경로이다.
+
+이 경로가 없으면 EC2에 Public IP가 있더라도 외부 인터넷으로 나가거나, 외부 사용자가 HTTP/HTTPS로 접근하는 흐름이 정상적으로 완성되지 않는다. 따라서 Public Subnet이 실제로 인터넷과 연결되려면 Internet Gateway 연결뿐 아니라 Route Table의 `0.0.0.0/0 → IGW` 설정이 함께 필요하다.
+
+---
+
+## 외부 접속 실패 시 점검 순서
+
+외부에서 `http://<Public IP>` 또는 `https://cody-aws-web.duckdns.org` 접속이 실패할 경우, 다음 순서로 점검한다.
+
+#### 1단계. 라우팅 확인
+
+먼저 네트워크 경로가 열려 있는지 확인한다.
+
+* EC2가 `mission6-public-subnet`에 배치되어 있는지 확인한다.
+* Public Subnet에 연결된 Route Table이 `mission6-public-rt`인지 확인한다.
+* Route Table에 `0.0.0.0/0 → mission6-igw` 경로가 있는지 확인한다.
+* Internet Gateway `mission6-igw`가 `mission6-vpc`에 attach 되어 있는지 확인한다.
+
+라우팅이 잘못되어 있으면 서버 프로세스가 정상이어도 외부 트래픽이 EC2까지 도달하지 못한다.
+
+#### 2단계. Security Group 확인
+
+다음으로 EC2 앞단 방화벽 역할을 하는 Security Group을 확인한다.
+
+`mission6-web-sg`의 인바운드 규칙은 다음과 같이 구성했다.
+
+| Type  | Port | Source      | 목적             |
+| ----- | ---: | ----------- | -------------- |
+| HTTP  |   80 | `0.0.0.0/0` | 외부 HTTP 접속 허용  |
+| HTTPS |  443 | `0.0.0.0/0` | 외부 HTTPS 접속 허용 |
+| SSH   |   22 | `My IP/32`  | 관리자 접속 제한      |
+
+외부 웹 접속이 안 될 경우 HTTP 80 또는 HTTPS 443 규칙이 누락되었는지 먼저 확인한다. SSH 접속 실패 시에는 SSH 22번 Source가 실제 접속 중인 PC의 공인 IP와 일치하는지 확인한다.
+
+#### 3단계. Public IP와 DNS 확인
+
+EC2에 Public IPv4 주소가 할당되어 있는지 확인한다.
+
+또한 DuckDNS 도메인을 사용하는 경우 다음 명령으로 도메인이 EC2 Public IP를 가리키는지 확인한다.
+
+```bash
+nslookup cody-aws-web.duckdns.org
+```
+
+결과 IP가 EC2 Public IPv4와 다르면 DuckDNS의 current IP 값을 EC2 Public IP로 수정한 뒤 다시 확인한다.
+
+#### 4단계. 서버 프로세스와 로그 확인
+
+라우팅, Security Group, DNS가 정상이라면 EC2 내부의 웹서버 상태를 확인한다.
+
+nginx 직접 설치 버전에서는 다음을 확인한다.
+
+```bash
+sudo systemctl status nginx --no-pager
+curl -I http://localhost
+sudo nginx -t
+```
+
+Docker 버전에서는 다음을 확인한다.
+
+```bash
+sudo docker ps
+curl -I http://localhost
+```
+
+필요하면 nginx 로그도 확인한다.
+
+```bash
+sudo tail -n 50 /var/log/nginx/access.log
+sudo tail -n 50 /var/log/nginx/error.log
+```
+
+이 순서를 따르면 네트워크 경로 문제, 방화벽 문제, DNS 문제, 서버 프로세스 문제를 단계적으로 분리해서 확인할 수 있다.
+
+---
+
+## IAM 권한 부족 시 최소권한 원칙에 따른 대응 방식
+
+IAM 권한 부족 오류가 발생하면 권한을 무작정 `AdministratorAccess`로 올리지 않고, 필요한 권한 범위를 좁혀서 확인한다.
+
+예상되는 오류 메시지는 다음과 같다.
+
+```text
+AccessDenied
+UnauthorizedOperation
+You are not authorized to perform this operation
+```
+
+대응 순서는 다음과 같다.
+
+1. 오류 메시지에서 실패한 AWS Action을 확인한다.
+   예: `ec2:CreateVpc`, `ec2:RunInstances`, `ec2:AuthorizeSecurityGroupIngress`
+
+2. CloudTrail Event history에서 실패한 API 호출을 확인한다.
+   어떤 사용자 또는 Role이 어떤 API를 호출했고, 어떤 권한 부족으로 실패했는지 확인한다.
+
+3. IAM Policy Simulator를 사용해 현재 IAM 사용자 또는 그룹 정책으로 해당 Action이 허용되는지 테스트한다.
+
+4. 필요한 경우 정책을 추가하되, 전체 관리자 권한을 부여하지 않고 실습에 필요한 EC2/VPC/Security Group 관련 권한만 추가한다.
+
+5. 실습과 무관한 S3, RDS, Lambda, Billing 관리 권한은 부여하지 않는다.
+
+이번 실습에서는 루트 계정 대신 `mission6-user` IAM 사용자를 사용했고, 실습 목적에 맞게 EC2/VPC 중심의 권한을 부여했다. IAM 권한 문제 발생 시에는 전체 관리자 권한으로 우회하지 않고, CloudTrail과 정책 시뮬레이터를 통해 부족한 최소 Action을 확인한 뒤 제한적으로 보완하는 방식을 원칙으로 한다.
