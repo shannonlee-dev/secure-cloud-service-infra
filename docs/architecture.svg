@@ -7,6 +7,7 @@
       text { font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; fill: #1e293b; }
       .title { font-size: 30px; font-weight: 700; }
       .heading { font-size: 22px; font-weight: 700; }
+      .node-heading { font-size: 18px; font-weight: 700; }
       .body { font-size: 18px; }
       .small { font-size: 16px; fill: #475569; }
       .box { fill: #fff; stroke: #94a3b8; stroke-width: 2; rx: 14; }
@@ -18,10 +19,10 @@
   <text class="small" x="50" y="90">Reproduction model with your own DNS and new EC2 IP. Historical screenshots are separate evidence.</text>
 
   <rect class="box" x="50" y="130" width="260" height="98"/>
-  <text class="heading" x="74" y="164">Browser / admin PC</text>
+  <text class="node-heading" x="74" y="164">Browser / admin PC</text>
   <text class="body" x="74" y="199">Resolves your domain</text>
   <rect class="box" x="410" y="130" width="275" height="98"/>
-  <text class="heading" x="434" y="164">Your DNS provider</text>
+  <text class="node-heading" x="434" y="164">Your DNS provider</text>
   <text class="body" x="434" y="199">A record: new public IPv4</text>
   <path class="line" d="M310 158 H410"/>
   <path class="line" d="M410 208 H310"/>
@@ -29,17 +30,17 @@
   <text class="small" x="327" y="230">IP reply</text>
 
   <rect class="box" x="50" y="285" width="255" height="98"/>
-  <text class="heading" x="74" y="320">Public HTTP / HTTPS</text>
+  <text class="node-heading" x="74" y="320">Public HTTP / HTTPS</text>
   <text class="body" x="74" y="353">Connect to new EC2 IP</text>
   <path class="line" d="M180 228 V285"/>
   <rect class="box" x="365" y="285" width="240" height="98"/>
-  <text class="heading" x="389" y="320">Internet Gateway</text>
+  <text class="node-heading" x="389" y="320">Internet Gateway</text>
   <text class="body" x="389" y="353">Attached to your VPC</text>
   <rect class="box" x="665" y="285" width="285" height="98"/>
-  <text class="heading" x="689" y="320">Public subnet + route</text>
+  <text class="node-heading" x="689" y="320">Public subnet + route</text>
   <text class="body" x="689" y="353">0.0.0.0/0 via IGW</text>
   <rect class="box" x="1010" y="285" width="300" height="98"/>
-  <text class="heading" x="1034" y="320">Security Group</text>
+  <text class="node-heading" x="1034" y="320">Security Group</text>
   <text class="body" x="1034" y="350">80 / 443: service scope</text>
   <text class="small" x="1034" y="372">22: actual admin IPv4 /32</text>
   <path class="line" d="M305 335 H365 M605 335 H665 M950 335 H1010"/>
