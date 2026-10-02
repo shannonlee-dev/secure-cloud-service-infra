@@ -14,7 +14,7 @@
 | Internet Gateway | VPC 삭제 흐름에서 Detach 및 삭제 | 완료 | `../screenshots/13-vpc-mission6-delete-success.png` |
 | VPC `mission6-vpc` | VPC와 종속 리소스 삭제 | 완료 | `../screenshots/13-vpc-mission6-delete-success.png`, `../screenshots/15-vpc-list-empty-after-delete.png` |
 | Public Subnet | VPC 종속 리소스 정리 흐름에서 삭제 | 완료 | `../screenshots/13-vpc-mission6-delete-success.png` |
-| Route Table | VPC 종속 리소스 정리 흐름에서 삭제 | 완료 | `../screenshots/13-vpc-mission6-delete-success.png` |
+| Route 테이블 | VPC 종속 리소스 정리 흐름에서 삭제 | 완료 | `../screenshots/13-vpc-mission6-delete-success.png` |
 | Security Group | VPC 종속 리소스 정리 흐름에서 삭제 | 완료 | `../screenshots/13-vpc-mission6-delete-success.png` |
 | 키페어 | 실습용 키페어 삭제 | 완료 | `../screenshots/17-keypair-delete-success.png` |
 | NAT Gateway | 생성했다면 삭제 | 생성하지 않음 | 단일 Public Subnet 구성이라 NAT Gateway가 필요하지 않았다 |
@@ -26,7 +26,7 @@
 1. 컴퓨트 과금을 먼저 멈추기 위해 EC2 인스턴스를 종료한다.
 2. EBS 볼륨이 삭제되었는지 또는 분리된 미사용 볼륨이 남지 않았는지 확인한다. 남은 볼륨은 계속 과금될 수 있다.
 3. Elastic IP를 별도로 할당했다면 Release한다. 연결되지 않은 Elastic IP는 과금될 수 있다.
-4. 네트워크 리소스는 의존성 역순으로 정리한다. Public Subnet, Route Table 연결, Internet Gateway Detach/Delete, Security Group, VPC 순서로 확인한다.
+4. 네트워크 리소스는 의존성 역순으로 정리한다. Public Subnet, Route 테이블 연결, Internet Gateway Detach/Delete, Security Group, VPC 순서로 확인한다.
 5. 인스턴스가 삭제된 뒤 실습용 키페어를 삭제한다.
 6. 선택 유료 리소스인 NAT Gateway, Load Balancer, RDS가 생성되지 않았거나 삭제되었는지 확인한다.
 
