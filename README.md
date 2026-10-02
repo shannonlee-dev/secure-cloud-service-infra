@@ -16,11 +16,14 @@ AWS VPC와 공개 서브넷에 EC2 웹 서버를 구성하고 SSH 접근 제한,
 
 `클라이언트 → DNS → 인터넷 게이트웨이 → 공개 서브넷·라우팅 → 보안 그룹 → EC2 웹 서비스` 흐름입니다. 직접 설치한 nginx와 Docker 실행은 실습 단계별 기록으로 구분합니다.
 
-![기존 네트워크 구성도](docs/architecture.png)
+![호스트 HTTPS와 Docker HTTP 단계 구분 구성도](docs/architecture.svg)
+
+SVG는 새 실습에서 호스트 HTTPS와 로컬 Docker HTTP를 분리하는 구성을 보여줍니다. [기존 PNG 구성도](docs/architecture.png)는 Docker HTTP 경로 중심의 과거 이미지이며 HTTPS 동시 구성을 증명하지 않습니다.
 
 | 경로 | 역할 |
 | --- | --- |
-| `docs/architecture.svg`, `architecture.png` | 원본 구성도와 표시용 이미지 |
+| `docs/architecture.svg` | 이식 가능한 단계 구분 구성도 |
+| `docs/architecture.png` | 과거 Docker HTTP 경로 이미지 |
 | `docs/deployment-record.md` | 기존 환경·배포·확인 기록 |
 | `docs/reproduction.md` | 새 실습 환경의 준비·확인 절차 |
 | `docs/troubleshooting.md` | SSH 접속 문제 분석 |
