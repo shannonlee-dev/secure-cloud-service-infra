@@ -51,7 +51,7 @@ Security Group은 EC2 인스턴스로 들어오는 네트워크 트래픽을 제
 
 전체 트래픽 허용 규칙이나 `0.0.0.0/0` 전체 포트 개방 규칙은 사용하지 않았다. `docs/troubleshooting.md`에 기록한 SSH 접속 실패는 SSH를 전체 공개로 여는 대신, 실제 접속을 수행한 PC/WSL 환경의 공인 IP로 SSH Source CIDR을 바로잡아 해결했다.
 
-작업은 AWS 루트 계정이 아니라 별도로 준비한 실습용 IAM 사용자 또는 Role로 수행했다. 권한 범위는 EC2, VPC, Subnet, Route 테이블, Internet Gateway, Security Group, 태그, 연결 작업처럼 실습에 필요한 범위로 제한했고, S3/RDS 같은 무관 서비스 권한이나 `AdministratorAccess`는 사용하지 않는 구성을 목표로 했다.
+보고된 작업 계정은 실습용 IAM 사용자 또는 Role이다. EC2/VPC 중심 권한과 `AdministratorAccess`를 사용하지 않는 구성을 목표로 했으나, 정책 원문·연결 정책 목록·계정 식별 증빙은 저장소에 없다. 따라서 실제 최소권한 적용이나 루트 계정 미사용을 제출 증거만으로 확정하지 않는다.
 
 ## 배포 및 검증 증거
 
@@ -74,7 +74,7 @@ Security Group은 EC2 인스턴스로 들어오는 네트워크 트래픽을 제
 - EC2 인스턴스에 Docker를 설치했다.
 - `nginx:alpine` 컨테이너 이미지로 웹 서비스를 실행했다.
 - 포트 매핑은 `0.0.0.0:80->80/tcp`, `[::]:80->80/tcp`로 확인했다.
-- Docker 실행 증거와 외부 접속 증거는 `screenshots/10-docker-ps.png`, `screenshots/09-https-browser.png`에 포함했다.
+- `screenshots/07-certbot-success.png`는 인증서가 호스트 `/etc/nginx/sites-enabled/default`에 적용된 것을 보여준다. `screenshots/10-docker-ps.png`는 컨테이너 HTTP 80 포트 매핑만 보여준다. 이 화면들은 서로 다른 실습 단계이며 Docker에서 HTTPS를 동시에 제공했다는 증거는 아니다.
 
 ## 리소스 정리
 
@@ -223,4 +223,4 @@ You are not authorized to perform this operation
 
 5. 실습과 무관한 S3, RDS, Lambda, Billing 관리 권한은 부여하지 않는다.
 
-이번 실습에서는 루트 계정 대신 `mission6-user` IAM 사용자를 사용했고, 실습 목적에 맞게 EC2/VPC 중심의 권한을 부여했다. IAM 권한 문제 발생 시에는 전체 관리자 권한으로 우회하지 않고, CloudTrail과 정책 시뮬레이터를 통해 부족한 최소 Action을 확인한 뒤 제한적으로 보완하는 방식을 원칙으로 한다.
+기존 기록의 계정명은 `mission6-user`이며, 실제 연결 정책·CloudTrail·정책 시뮬레이터 결과는 보존되지 않았다. 위 대응 순서는 재현 시 적용할 원칙이며 과거에 모든 단계를 실행했다는 증거는 아니다. 새 실습에는 자격 증명을 제외한 계정/Role 식별, 정책 버전·Action·Resource 범위, 실패 및 허용 결과를 함께 남긴다.
